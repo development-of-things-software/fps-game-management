@@ -39,14 +39,14 @@ end
 function core.team.init(name, showNameInternally)
   core.team.add(name, name)
   core.team.modify(name, "color", name)
-  core.team.modify(name, "prefix", "["..name.."] ")
-  commands.scoreboard("players", "set", name, "teamkills", 0)
+  core.team.modify(name, "prefix ["..name.."] ")
+  commands.scoreboard("players set", name, "teamkills 0")
   if showNameInternally then
-    core.team.modify(name, "nametagVisibility", "hideForOtherTeams")
-    core.team.modify(name, "friendlyFire", "false")
+    core.team.modify(name, "nametagVisibility hideForOtherTeams")
+    core.team.modify(name, "friendlyFire false")
   else
-    core.team.modify(name, "nametagVisibility", "never")
-    core.team.modify(name, "friendlyFire", "true")
+    core.team.modify(name, "nametagVisibility never")
+    core.team.modify(name, "friendlyFire true")
   end
 end
 
@@ -99,7 +99,13 @@ function core.registerPlayer(name)
   end
   team = teamColors[team]
   core.team.join(team, name)
-  commands.scoreboard("players", "set", name, "kills", 0)
+  commands.scoreboard("players set", name, "kills", 0)
+end
+
+function core.retrieveScoreboard(name, board)
+  local _, result = commands.scoreboard("players get", name, board)
+  local res = result[1]:match(name.." has (%d) ")
+  return tonumber(res)
 end
 
 function core.runGame(params)
@@ -128,7 +134,7 @@ function core.runGame(params)
   -- spread players, if necessary
   if params.spread then
     commands.spreadplayers(startPosition[1], startPosition[2],
-      50, 50, "false", "@a")
+      50, 50, "false @a")
   else
     for i, pos in ipairs(teamPositions) do
       commands.tp("@a[team="..teamColors[i].."]", table.unpack(pos))
@@ -149,21 +155,18 @@ function core.runGame(params)
   while true do
     local signal = table.pack(os.pullEvent())
     if signal[1] == "timer" then
-      if signal[2] == game_ended then break end
-      if signal[2] == loot_refresh then
+      if signal[2] == game_ended then break
+      elseif signal[2] == loot_refresh then
         loot.refreshChests()
         loot_refresh = os.startTimer(params.lootRefresh)
-      end
-      if signal[2] == player_refresh then
+      elseif signal[2] == player_refresh then
         player_refresh = os.startTimer(PLAYER_RESPAWN_WAIT)
         -- clear up empty flux capacitors
         commands.clear("@a thermal:flux_capacitor{Energy:0}")
         if params.multilife then
           -- for each player that just died, throw them back in the fray
           for i, pname in ipairs(players) do
-            local yes, result = commands.scoreboard("players get",
-              pname, "deaths")
-            local count = tonumber(result[1]:match(" has (%d) "))
+            local count = core.retrieveScoreboard(pname, "deaths")
             if count > 0 then
               commands.scoreboard("players set", pname, "deaths 0")
               core.giveItems(pname, loadouts[params.loadout])
@@ -194,9 +197,7 @@ function core.runGame(params)
       core.team.empty(name)
   
       -- get the team's kill count
-      local _, result = commands.scoreboard("players get", name, "teamkills")
-      local kills = result[1]:match(name.." has (%d) ")
-      kills = tonumber(kills)
+      local kills = core.retrieveScoreboard(name, "teamkills")
       counts[#counts+1] = {name = name, kills = kills}
     end
   
@@ -210,7 +211,11 @@ function core.runGame(params)
       {text = " team has won!", color = "white"}
     }
   else -- non-teamed games (i.e. FFA)
+    core.team.empty("white")
+    for i, name in ipairs(players) do
+    end
   end
+  commands.kill("@e[type=item]")
 end
 
 return core

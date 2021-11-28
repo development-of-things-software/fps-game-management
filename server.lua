@@ -53,21 +53,6 @@ core.log = log
 
 log{{text="control computer started"}}
 
-local function power(id, state)
-  commands.computercraft(state and "turn-on" or "shutdown", tostring(id))
-end
-
-local computerCount = 10
-local thisComputer = 1
-local function powerCycleAll()
-  for i=0, computerCount, 1 do
-    if i ~= thisComputer then
-      power(i, false)
-      power(i, true)
-    end
-  end
-end
-
 -- where to teleport players so they can vote
 local votePosition = {
   171, 42, -42,
@@ -78,7 +63,6 @@ local votePosition = {
 local function reset()
   log{{text="resetting"}}
   votes = {}
-  powerCycleAll()
   loot.init()
   log {
     {text = "voting begins "},
