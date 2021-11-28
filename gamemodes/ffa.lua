@@ -3,22 +3,26 @@
 -- there are no teams
 -- there are few rules
 
-local log = ...
-
 local core = require("gamemodes.core")
 
-core.init()
+return function()
+  core.log {
+    {text = "You have 10 minutes.  Score as many frags as possible.",
+      color = "yellow"}
+  }
 
-log {
-  {text = "You have 10 minutes.  Score as many frags as possible.",
-    color = "yellow"}
-}
-
-os.sleep(60 * 10)
-
-log {
-  {text = "The game is over.",
-    color = "yellow"}
-}
-
-commands.tp("@a", 151, 241, -41)
+  core.runGame {
+    -- game takes ten minutes
+    gameEnd = 60 * 10,
+    -- loot refreshes every minute
+    lootRefresh = 60,
+    -- standard loadout
+    loadout = "standard",
+    -- spread players evenly
+    spread = true,
+    -- do not use multiple teams
+    teams = false,
+    -- refresh players upon death
+    multilife = true
+  }
+end

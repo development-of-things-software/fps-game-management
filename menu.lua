@@ -10,7 +10,9 @@ local function menu(title, items)
   term.clear()
   local w, h = term.getSize()
   while true do
-    term.setCursorPos(8, 2)
+    term.setTextColor(colors.white)
+    term.setBackgroundColor(colors.lightBlue)
+    term.setCursorPos(math.floor(w / 2) - math.floor(#title / 2), 2)
     term.write(title)
     for i=1, h - 5, 1 do
       term.setCursorPos(4, 3 + i)
@@ -25,12 +27,11 @@ local function menu(title, items)
         term.setCursorPos(4, 3 + item)
         term.setBackgroundColor(colors.lime)
         term.write(items[item] .. string.rep(" ", (w - 8) - #items[item]))
+        os.sleep(2)
         modem.transmit(795, 795, item)
-        break
       end
     end
   end
-  while true do os.pullEvent() end
 end
 
 local gamemodes = {

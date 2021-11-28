@@ -46,14 +46,19 @@ local function log(text)
   broadcast(msg)
 end
 
+-- give the core gameplay stuff the log function
+local core = require("gamemodes.core")
+local loot = require("loot")
+core.log = log
+
 log{{text="control computer started"}}
 
 local function power(id, state)
   commands.computercraft(state and "turn-on" or "shutdown", tostring(id))
 end
 
-local computerCount = 3
-local thisComputer = 0
+local computerCount = 10
+local thisComputer = 1
 local function powerCycleAll()
   for i=0, computerCount, 1 do
     if i ~= thisComputer then
@@ -63,69 +68,57 @@ local function powerCycleAll()
   end
 end
 
+-- where to teleport players so they can vote
+local votePosition = {
+  171, 42, -42,
+  -- facing toward the monitor!
+  -90, 0
+}
+
 local function reset()
   log{{text="resetting"}}
   votes = {}
   powerCycleAll()
-  --commands.clear("@a")
-  log{
+  loot.init()
+  log {
     {text = "voting begins "},
     {text = "NOW", color = "yellow"},
-    {text = " - you have ", color = "white"},
-    {text = "30", color = "green"},
-    {text = " seconds", color = "white"}
   }
-  local tids = {
-    [os.startTimer(5)] = 25,
-    [os.startTimer(10)] = 20,
-    [os.startTimer(15)] = 15,
-    [os.startTimer(20)] = 10,
-    [os.startTimer(25)] = 5,
-    [os.startTimer(26)] = 4,
-    [os.startTimer(27)] = 3,
-    [os.startTimer(28)] = 2,
-    [os.startTimer(29)] = 1,
-  }
-  local tid_last = os.startTimer(30)
-  while true do
-    local signal, _t, chan, _, id = os.pullEvent()
-    if signal == "timer" then
-      if _t == tid_last then break end
-      if tids[_t] then
-        log{
-          {text = tostring(tids[_t]), color = "green"},
-          {text = " seconds remain", color = "white"}
-        }
+  -- teleport all players to the waiting area
+  commands.tp("@a", 182, 42, -41)
+  local players = core.getPlayers()
+  for i, name in ipairs(players) do
+    commands.tp(name, table.unpack(votePosition))
+    while true do
+      local signal, _t, chan, _, id = os.pullEvent()
+      if signal == "modem_message" and chan == 795 then
+        print("got a vote for " .. id)
+        votes[id] = (votes[id] or 0) + 1
+        -- teleport player back to the waiting area
+        commands.title(name, "actionbar",
+          '"Vote accepted. Please wait for others."')
+        commands.tp(name, 182, 42, -41)
+        break
       end
     end
-    if signal == "modem_message" and chan == 795 then
-      print("got a vote for " .. id)
-      votes[id] = (votes[id] or 0) + 1
-    end
   end
+  
+  -- sort votes
   for i=1, #gamemodes, 1 do
     votes[i] = {count = votes[i] or 0, name = gamemodes[i]}
   end
   table.sort(votes, function(a, b)
     return a.count > b.count
   end)
+
   log {
     {text = "The chosen game mode is ", color = "white"},
     {text = votes[1].name, color = "red"}
   }
-  local gmf, err = loadfile("/gamemodes/"..gmids[votes[1].name]..".lua", nil,
-    nil, _ENV)
-  if not gmf then
-    log {
-      {text = "Failed to launch the game", color = "red"}
-    }
-    log {
-      {text = "Error reason: ", color = "white"},
-      {text = err, color = "red"}
-    }
-  else
-    gmf(log)
-  end
+  local gmf = require("gamemodes."..gmids[votes[1].name])
+  gmf()
 end
 
-reset()
+while true do
+  reset()
+end
