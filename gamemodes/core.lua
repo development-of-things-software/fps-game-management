@@ -77,6 +77,7 @@ function core.getPlayers()
 end
 
 function core.giveItems(name, loadout)
+  commands.clear(name)
   for k, v in pairs(loadout) do
     commands.replaceitem("entity", name, k, v)
   end
@@ -155,6 +156,8 @@ function core.runGame(params)
       end
       if signal[2] == player_refresh then
         player_refresh = os.startTimer(PLAYER_RESPAWN_WAIT)
+        -- clear up empty flux capacitors
+        commands.clear("@a thermal:flux_capacitor{Energy:0}")
         if params.multilife then
           -- for each player that just died, throw them back in the fray
           for i, pname in ipairs(players) do
@@ -162,8 +165,8 @@ function core.runGame(params)
               pname, "deaths")
             local count = tonumber(result[1]:match(" has (%d) "))
             if count > 0 then
-              commands.scoreboard("players set", name, "deaths 0")
-              core.giveItems(name, loadouts[params.loadout])
+              commands.scoreboard("players set", pname, "deaths 0")
+              core.giveItems(pname, loadouts[params.loadout])
               commands.spreadplayers(startPosition[1], startPosition[2],
                 50, 40, "false", pname)
             end

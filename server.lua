@@ -84,6 +84,8 @@ local function reset()
     {text = "voting begins "},
     {text = "NOW", color = "yellow"},
   }
+  commands.clear("@a")
+  commands.gamemode("adventure @a")
   -- teleport all players to the waiting area
   commands.tp("@a", 182, 42, -41)
   local players = core.getPlayers()
