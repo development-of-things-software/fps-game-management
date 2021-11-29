@@ -6,12 +6,14 @@ local votes = {}
 
 local gamemodes = {
   "Free-for-all",
-  "Team Deathmatch"
+  "Team Deathmatch",
+  "Midieval Free-for-all"
 }
 
 local gmids = {
   ["Free-for-all"] = "ffa",
-  ["Team Deathmatch"] = "tdm"
+  ["Team Deathmatch"] = "tdm",
+  ["Midieval Free-for-all"] = "mid"
 }
 
 local function tojson(t)

@@ -36,7 +36,8 @@ end
 
 local gamemodes = {
   "Free-for-all",
-  "Team Deathmatch"
+  "Team Deathmatch",
+  "Midieval Free-for-all"
 }
 
 menu("Select Gamemode", gamemodes)

@@ -21,17 +21,37 @@ local loadouts = {
 
 local core = {}
 
+-- custom command wrappers to preserve events
+local function makeCommand(name)
+  return function(...)--[[
+    local id = commands.async[name](...)
+    while true do
+      local signal = table.pack(os.pullEvent())
+      if signal[1] == "task_complete" and signal[2] == id then
+        return table.unpack(signal, 3, signal.n)
+      end
+      os.queueEvent(table.unpack(signal, 1, signal.n))
+    end--]]
+    return commands.exec(table.concat(table.pack(name, ...), " "))
+  end
+end
+
+core.commands = setmetatable({}, {__index = function(t, k)
+  t[k] = makeCommand(k)
+  return t[k]
+end})
+
 -- e.g. core.team.join("example", "FooBarBazUser")
 core.team = setmetatable({}, {__index = function(t, k)
   return function(...)
-    return commands.team(k, ...)
+    return core.commands.team(k, ...)
   end
 end})
 
 -- override team.add()
 function core.team.add(name, dname)
   dname = '"' .. dname .. '"'
-  return commands.team("add", name, dname)
+  return core.commands.team("add", name, dname)
 end
 
 -- initialize a team
@@ -40,7 +60,7 @@ function core.team.init(name, showNameInternally)
   core.team.add(name, name)
   core.team.modify(name, "color", name)
   core.team.modify(name, "prefix ["..name.."] ")
-  commands.scoreboard("players set", name, "teamkills 0")
+  core.commands.scoreboard("players set", name, "teamkills 0")
   if showNameInternally then
     core.team.modify(name, "nametagVisibility hideForOtherTeams")
     core.team.modify(name, "friendlyFire false")
@@ -64,7 +84,7 @@ local teamColors = { "red", "blue" }
 -- plugins, particularly if those plugins
 -- change the output of '/list'
 function core.getPlayers()
-  local success, output = commands.exec("list")
+  local success, output = core.commands.list()
   if output then
     local players = {}
     local plist = output[1]:match("online: (.+)")
@@ -77,9 +97,9 @@ function core.getPlayers()
 end
 
 function core.giveItems(name, loadout)
-  commands.clear(name)
+  core.commands.clear(name)
   for k, v in pairs(loadout) do
-    commands.replaceitem("entity", name, k, v)
+    commands.async.replaceitem("entity", name, k, v)
   end
 end
 
@@ -99,11 +119,11 @@ function core.registerPlayer(name)
   end
   team = teamColors[team]
   core.team.join(team, name)
-  commands.scoreboard("players set", name, "kills", 0)
+  core.commands.scoreboard("players set", name, "kills", 0)
 end
 
 function core.retrieveScoreboard(name, board)
-  local _, result = commands.scoreboard("players get", name, board)
+  local _, result = core.commands.scoreboard("players get", name, board)
   local res = result[1]:match(name.." has (%d) ")
   return tonumber(res)
 end
@@ -136,25 +156,28 @@ function core.runGame(params)
     commands.spreadplayers(startPosition[1], startPosition[2],
       50, 50, "false @a")
   else
-    for i, pos in ipairs(teamPositions) do
-      commands.tp("@a[team="..teamColors[i].."]", table.unpack(pos))
+    for i, pos in ipairs(teamLocations) do
+      commands.async.tp("@a[team="..teamColors[i].."]", table.unpack(pos))
     end
   end
 
   -- main loop
-  local game_ended = os.startTimer(params.gameEnd)
-  local loot_refresh = os.startTimer(params.lootRefresh)
-  local player_refresh = os.startTimer(PLAYER_RESPAWN_WAIT)
-
   core.log{{text = "The game is starting"}}
   
   -- require this here to avoid loops
   local loot = require("loot")
 
   loot.refreshChests()
+  
+  local game_ended = os.startTimer(params.gameEnd)
+  local loot_refresh = os.startTimer(params.lootRefresh)
+  local player_refresh = os.startTimer(PLAYER_RESPAWN_WAIT)
+
   while true do
     local signal = table.pack(os.pullEvent())
-    if signal[1] == "timer" then
+    if signal[1] == "computer_command" then
+      if signal[2] == "game_end" then break end
+    elseif signal[1] == "timer" then
       if signal[2] == game_ended then break
       elseif signal[2] == loot_refresh then
         loot.refreshChests()
@@ -162,15 +185,15 @@ function core.runGame(params)
       elseif signal[2] == player_refresh then
         player_refresh = os.startTimer(PLAYER_RESPAWN_WAIT)
         -- clear up empty flux capacitors
-        commands.clear("@a thermal:flux_capacitor{Energy:0}")
+        core.commands.clear("@a thermal:flux_capacitor{Energy:0}")
         if params.multilife then
           -- for each player that just died, throw them back in the fray
           for i, pname in ipairs(players) do
             local count = core.retrieveScoreboard(pname, "deaths")
             if count > 0 then
-              commands.scoreboard("players set", pname, "deaths 0")
+              core.commands.scoreboard("players set", pname, "deaths 0")
               core.giveItems(pname, loadouts[params.loadout])
-              commands.spreadplayers(startPosition[1], startPosition[2],
+              core.commands.spreadplayers(startPosition[1], startPosition[2],
                 50, 40, "false", pname)
             end
           end
@@ -208,14 +231,35 @@ function core.runGame(params)
     core.log {
       {text = "The "},
       {text = counts[1].name:upper(), colors = counts[1].name},
-      {text = " team has won!", color = "white"}
+      {text = " team has won with ", color = "white"},
+      {text = tostring(counts[1].kills), color = "yellow"},
+      {text = " frags!", color = "white"}
     }
   else -- non-teamed games (i.e. FFA)
     core.team.empty("white")
+    local counts = {}
     for i, name in ipairs(players) do
+      counts[#counts+1] = {
+        name = name, kills = core.retrieveScoreboard(name, "kills")
+      }
+      commands.scoreboard("players set", name, "kills 0")
     end
+    table.sort(counts, function(a, b)
+      return a.kills > b.kills
+    end)
+    core.log {
+      {text = counts[1].name, color = "green"},
+      {text = " has won with ", color = "white"},
+      {text = tostring(counts[1].kills), color = "yellow"},
+      {text = " frags!", color = "white"},
+    }
   end
   commands.kill("@e[type=item]")
+  for _, player in ipairs(players) do
+    commands.gamemode("spectator", player)
+    commands.effect("give", player, "minecraft:instant_health 10 120 true")
+    commands.effect("give", player, "minecraft:saturation 10 120 true")
+  end
 end
 
 return core
