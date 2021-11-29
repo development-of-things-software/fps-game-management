@@ -23,16 +23,18 @@ local core = {}
 
 -- custom command wrappers to preserve events
 local function makeCommand(name)
-  return function(...)--[[
-    local id = commands.async[name](...)
+  return function(...)-- [[
+    local id = commands.execAsync(table.concat(table.pack(name, ...), " "))
     while true do
       local signal = table.pack(os.pullEvent())
       if signal[1] == "task_complete" and signal[2] == id then
         return table.unpack(signal, 3, signal.n)
+      else
+        os.queueEvent(table.unpack(signal, 1, signal.n))
       end
-      os.queueEvent(table.unpack(signal, 1, signal.n))
     end--]]
-    return commands.exec(table.concat(table.pack(name, ...), " "))
+    --[[
+    return commands.exec(table.concat(table.pack(name, ...), " "))--]]
   end
 end
 
