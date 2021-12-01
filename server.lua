@@ -1,5 +1,7 @@
 -- the server deals with things like gamemodes --
 
+local MIN_PLAYERS = 2
+
 local modem = peripheral.find("modem")
 modem.open(795)
 local votes = {}
@@ -78,12 +80,12 @@ local function reset()
         {text = "We have ", color = "gold"},
         {text = tostring(#players), color = "yellow"},
         {text = " of the ", color = "gold"},
-        {text = "4", color = "yellow"},
+        {text = tostring(MIN_PLAYERS), color = "yellow"},
         {text = " players required to start a match.", color = "gold"},
       }
     end
     nplayers = #players
-  until #players >= 4
+  until #players >= MIN_PLAYERS
   local countdown = 10
   for i=countdown, 1, -1 do
     os.sleep(1)
