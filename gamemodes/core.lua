@@ -113,7 +113,7 @@ function core.giveItems(name, loadout)
 end
 
 local startPosition = {
-  210, -15
+  187.5, -17.5
 }
 
 -- if a player joins in the middle of a
