@@ -28,7 +28,14 @@ local function makeCommand(name)
     while true do
       local signal = table.pack(os.pullEvent())
       if signal[1] == "task_complete" and signal[2] == id then
-        return table.unpack(signal, 3, signal.n)
+        if signal[4] and not signal[3] then
+          for i, line in ipairs(signal[4]) do
+            core.log {
+              {text = line, color = "red"}
+            }
+          end
+        end
+        return table.unpack(signal, 4, signal.n)
       else
         os.queueEvent(table.unpack(signal, 1, signal.n))
       end
