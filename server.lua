@@ -100,7 +100,7 @@ local function reset()
   for i, name in ipairs(players) do
     commands.tp(name, table.unpack(votePosition))]]
     commands.replaceitem(
-      "entity @a hotbar.0 computercraft:pocket_computer_advanced{ComputerId:1}")
+      "entity @a hotbar.0 computercraft:pocket_computer_advanced{ComputerId:3}")
     local tid = os.startTimer(20)
     local tvotes = 0
     while true do
