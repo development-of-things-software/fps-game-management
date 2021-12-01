@@ -73,7 +73,7 @@ local function reset()
   commands.clear("@a")
   commands.gamemode("adventure @a")
   -- teleport all players to the waiting area
-  commands.tp("@a", 182, 42, -41)
+  commands.tp("@a", 182, 43, -42)
   local players = core.getPlayers()
   for i, name in ipairs(players) do
     commands.tp(name, table.unpack(votePosition))

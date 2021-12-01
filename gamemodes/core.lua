@@ -239,7 +239,7 @@ function core.runGame(params)
   
     core.log {
       {text = "The "},
-      {text = counts[1].name:upper(), colors = counts[1].name},
+      {text = counts[1].name:upper(), color = counts[1].name},
       {text = " team has won with ", color = "white"},
       {text = tostring(counts[1].kills), color = "yellow"},
       {text = " frags!", color = "white"}
