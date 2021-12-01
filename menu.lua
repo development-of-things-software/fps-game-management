@@ -27,11 +27,12 @@ local function menu(title, items)
         term.setCursorPos(4, 3 + item)
         term.setBackgroundColor(colors.lime)
         term.write(items[item] .. string.rep(" ", (w - 8) - #items[item]))
-        os.sleep(2)
         modem.transmit(795, 795, item)
+        break
       end
     end
   end
+  while true do os.pullEventRaw() end
 end
 
 local gamemodes = {

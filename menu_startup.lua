@@ -1,1 +1,1 @@
-shell.run("monitor back menu")
+shell.run("menu")

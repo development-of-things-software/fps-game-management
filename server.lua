@@ -96,21 +96,34 @@ local function reset()
     }
   end
   players = core.getPlayers()
+  --[[
   for i, name in ipairs(players) do
-    commands.tp(name, table.unpack(votePosition))
+    commands.tp(name, table.unpack(votePosition))]]
+    commands.replaceitem(
+      "entity @a hotbar.0 computercraft:pocket_computer_advanced{ComputerId:1}")
+    local tid = os.startTimer(20)
+    local tvotes = 0
     while true do
       local signal, _t, chan, _, id = os.pullEvent()
       if signal == "modem_message" and chan == 795 then
         print("got a vote for " .. id)
+        tvotes = tvotes + 1
         votes[id] = (votes[id] or 0) + 1
         -- teleport player back to the waiting area
         commands.title(name, "actionbar",
           '"Vote accepted. Please wait for others."')
-        commands.tp(name, 182, 42, -41)
+        --commands.tp(name, 182, 42, -41)
+        break
+      end
+      if (signal == "timer" and _t == tid) or tvotes == #players then
+        log {
+          {text = "Voting is ", color = "white"},
+          {text = "OVER", color = "red"}
+        }
         break
       end
     end
-  end
+  --end
   
   -- sort votes
   for i=1, #gamemodes, 1 do
