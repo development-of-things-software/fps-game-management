@@ -142,7 +142,6 @@ local verySpecialLootTable = {
 
 local function refreshChest(chest, loot)
   local x, y, z = chest[1], chest[2], chest[3]
-  core.commands.setblock(x, y, z, "minecraft:chest")
   local nitems = math.random(2, 15)
   local slots = {}
   for i=1, nitems, 1 do
