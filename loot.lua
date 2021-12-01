@@ -62,8 +62,7 @@ local lootTable = {
   {"cgm:light_stock", -2, 1},
   {"cgm:tactical_stock", -2, 1},
   {"cgm:silencer", -2, 1},
-  {"timeless_and_classic:round45", -1, 52},
-  {"timeless_and_classic:round45", -1, 52},
+  {"timeless_and_classic:round45", -1, 10},
   {"cgm:weighted_stock", -2, 1},
   {"cgm:light_grip", -2, 1},
   {"cgm:pistol", -8, 1},
@@ -97,7 +96,7 @@ local specialLootTable = {
   {"cgm:tactical_stock", -2, 1},
   {"cgm:silencer", -2, 1},
   {"cgm:weighted_stock", -2, 1},
-  {"timeless_and_classic:round45", -1, 52},
+  {"timeless_and_classic:round45", -1, 32},
   {"cgm:light_grip", -2, 1},
   {"cgm:specialised_grip", -2, 1},
   {"cgm:short_scope", -2, 1},
@@ -114,8 +113,6 @@ local specialLootTable = {
 
 -- loot for the very special chest
 local verySpecialLootTable = {
-  {"cgm:heavy_rifle", -10, 1},
-  {"cgm:heavy_rifle", -10, 1},
   {"cgm:heavy_rifle", -10, 1},
   {"cgm:heavy_rifle", -10, 1},
   {"cgm:heavy_rifle", -10, 1},
