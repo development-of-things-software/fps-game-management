@@ -66,15 +66,34 @@ local function reset()
   log{{text="resetting"}}
   votes = {}
   loot.init()
-  log {
-    {text = "voting begins "},
-    {text = "NOW", color = "yellow"},
-  }
-  commands.clear("@a")
-  commands.gamemode("adventure @a")
-  -- teleport all players to the waiting area
-  commands.tp("@a", 182, 43, -42)
-  local players = core.getPlayers()
+  local players, nplayers
+  repeat
+    commands.clear("@a")
+    commands.gamemode("adventure @a")
+    -- teleport all players to the waiting area
+    commands.tp("@a", 182, 43, -42)
+    players = core.getPlayers()
+    if #players ~= nplayers then
+      log {
+        {text = "We have ", color = "gold"},
+        {text = tostring(#players), color = "yellow"},
+        {text = " of the ", color = "gold"},
+        {text = "4", color = "yellow"},
+        {text = " players required to start a match.", color = "gold"},
+      }
+    end
+    nplayers = #players
+  until #players >= 4
+  local countdown = 10
+  for i=countdown, 1, -1 do
+    os.sleep(1)
+    log {
+      {text = "Voting begins in "},
+      {text = tostring(i), color = "yellow"},
+      {text = " seconds", color = "white"}
+    }
+  end
+  players = core.getPlayers()
   for i, name in ipairs(players) do
     commands.tp(name, table.unpack(votePosition))
     while true do
