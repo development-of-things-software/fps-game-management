@@ -9,7 +9,13 @@ local chestLocations = {
   {162,88,12},
   {166,88,-3},
   {199,88,-4},
-  {179,66,-49}
+  {179,66,-49},
+  {177,97,30},
+  {152,72,-19},
+  {153,88,4},
+  {216,106,-12},
+  {212,71,-27},
+  {170,64,-27},
 }
 
 -- these get better loot but are harder to find
@@ -135,17 +141,11 @@ local verySpecialLootTable = {
   {"minecraft:golden_carrot", 10, 64},
   {"minecraft:golden_carrot", 10, 64},
   {"minecraft:golden_carrot", 10, 64},
-  {"minecraft:golden_carrot", 10, 64},
-  {"minecraft:golden_carrot", 10, 64},
-  {"minecraft:golden_carrot", 10, 64},
-  {"minecraft:golden_carrot", 10, 64},
-  {"minecraft:golden_carrot", 10, 64},
-  {"minecraft:golden_carrot", 10, 64},
-  {"minecraft:golden_carrot", 10, 64},
 }
 
 local function refreshChest(chest, loot)
   local x, y, z = chest[1], chest[2], chest[3]
+  core.commands.setblock(x, y, z, "minecraft:chest")
   local nitems = math.random(2, 15)
   local slots = {}
   for i=1, nitems, 1 do
