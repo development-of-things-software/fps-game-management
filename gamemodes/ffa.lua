@@ -14,8 +14,8 @@ return function()
   core.runGame {
     -- game takes ten minutes
     gameEnd = 60 * 10,
-    -- loot refreshes every minute
-    lootRefresh = 60,
+    -- loot refreshes every 2 minutes
+    lootRefresh = 60 * 2,
     -- standard loadout
     loadout = "standard",
     -- spread players evenly

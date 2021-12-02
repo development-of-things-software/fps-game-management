@@ -155,6 +155,7 @@ local function refreshChest(chest, loot)
       slots[slot] = {item[1], count}
     end
   end
+  core.commands.setblock(x, y, z, "minecraft:chest")
   for slot, idat in pairs(slots) do
     commands.async.replaceitem("block", x, y, z,
       "container."..slot, idat[1], idat[2])

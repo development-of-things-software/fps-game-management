@@ -10,7 +10,7 @@ return function()
 
   core.runGame {
     gameEnd = 60 * 10,
-    lootRefresh = 60,
+    lootRefresh = 60 * 2,
     loadout = "standard",
     spread = false,
     teams = true,

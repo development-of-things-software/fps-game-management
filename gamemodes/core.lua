@@ -124,7 +124,7 @@ local playerCounts = {}
 function core.registerPlayer(name)
   local team = 1
   for i, count in ipairs(playerCounts) do
-    if count > playerCounts[team] then team = i end
+    if count < playerCounts[team] then team = i end
   end
   team = teamColors[team]
   core.team.join(team, name)
