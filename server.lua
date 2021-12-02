@@ -89,11 +89,13 @@ local function reset()
   local countdown = 10
   for i=countdown, 1, -1 do
     os.sleep(1)
-    log {
-      {text = "Voting begins in "},
-      {text = tostring(i), color = "yellow"},
-      {text = " seconds", color = "white"}
-    }
+    if i == 20 or i == 20 or i < 6 then
+      log {
+        {text = "Voting begins in "},
+        {text = tostring(i), color = "yellow"},
+        {text = " seconds", color = "white"}
+      }
+    end
   end
   players = core.getPlayers()
   --[[
@@ -101,7 +103,12 @@ local function reset()
     commands.tp(name, table.unpack(votePosition))]]
     commands.replaceitem(
       "entity @a hotbar.0 computercraft:pocket_computer_advanced{ComputerId:3,Upgrade:\"computercraft:wireless_modem_advanced\"}")
-    local tid = os.startTimer(20)
+    local tid = os.startTimer(60)
+    log {
+      {text = "Voting ends in "},
+      {text = "60", color = "red"},
+      {text = " seconds", color = "white"}
+    }
     local tvotes = 0
     while true do
       local signal, _t, chan, _, id = os.pullEvent()
