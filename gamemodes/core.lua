@@ -199,7 +199,7 @@ function core.runGame(params)
           -- for each player that just died, throw them back in the fray
           for i, pname in ipairs(players) do
             local count = core.retrieveScoreboard(pname, "deaths")
-            if count > 0 then
+            if count and count > 0 then
               core.commands.scoreboard("players set", pname, "deaths 0")
               core.giveItems(pname, loadouts[params.loadout])
               core.commands.spreadplayers(startPosition[1], startPosition[2],
